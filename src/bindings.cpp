@@ -48,7 +48,9 @@ static void fft(kiss_fftr_cfg cfg, const kiss_fft_scalar* in, kiss_fft_cpx* out)
 template <typename cfg_type, typename in_type, typename out_type>
 Worker<cfg_type, in_type, out_type>::Worker(NanCallback *callback, Local<Object> input, Local<Object> output)
   : NanAsyncWorker(callback) {
-  int nfft = output->GetIndexedPropertiesExternalArrayDataLength()/2;
+  int nfft = input->GetIndexedPropertiesExternalArrayDataLength();
+  if (nfft == output->GetIndexedPropertiesExternalArrayDataLength())
+    nfft /= 2;
   Alloc(cfg, nfft);
   SaveToPersistent("input", input);
   SaveToPersistent("output", output);
@@ -94,7 +96,7 @@ NAN_METHOD(fft) {
   int input_len = input->GetIndexedPropertiesExternalArrayDataLength();
   int output_len = output->GetIndexedPropertiesExternalArrayDataLength();
   if (input_len != output_len &&
-      input_len * 2 != output_len) {
+      input_len +1 != output_len) {
     NanThrowTypeError("Mismatch of array length for input and output");
     NanReturnUndefined();
   }
