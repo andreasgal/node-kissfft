@@ -7,10 +7,6 @@ namespace fftr {
 using namespace fft;
 #include "kiss_fftr.c"
 };
-namespace simd {
-using namespace simd;
-#include "kiss_fftr.c"
-};
 
 using namespace v8;
 
