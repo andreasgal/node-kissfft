@@ -99,7 +99,9 @@ void kiss_fft_stride(kiss_fft_cfg cfg,const kiss_fft_cpx *fin,kiss_fft_cpx *fout
 
 /* If kiss_fft_alloc allocated a buffer, it is one contiguous 
    buffer and can be simply free()d when no longer needed*/
-#define kiss_fft_free free
+void kiss_fft_free(kiss_fft_cfg cfg) {
+  free(cfg);
+}
 
 /*
  Cleans up some memory that gets managed internally. Not necessary to call, but it might clean up 

@@ -3,13 +3,14 @@
 namespace fft {
 #include "kiss_fft.c"
 };
-using namespace fft;
 namespace fftr {
+using namespace fft;
 #include "kiss_fftr.c"
-}
-using namespace fftr;
+};
 
 using namespace v8;
+
+typedef fft::kiss_fft_cpx kiss_fft_cpx;
 
 template <typename cfg_type, typename in_type, typename out_type>
 class Worker : public NanAsyncWorker {
@@ -27,27 +28,27 @@ private:
 };
 
 
-static void Alloc(kiss_fft_cfg& cfg, int nfft) {
-  cfg = kiss_fft_alloc(nfft, false, 0, 0);
+static void Alloc(fft::kiss_fft_cfg& cfg, int nfft) {
+  cfg = fft::kiss_fft_alloc(nfft, false, 0, 0);
 }
 
-static void Alloc(kiss_fftr_cfg& cfg, int nfft) {
-  cfg = kiss_fftr_alloc(nfft, false, 0, 0);
+static void Alloc(fftr::kiss_fftr_cfg& cfg, int nfft) {
+  cfg = fftr::kiss_fftr_alloc(nfft, false, 0, 0);
 }
 
-static void Free(kiss_fft_cfg cfg) {
-  kiss_fft_free(cfg);
+static void Free(fft::kiss_fft_cfg cfg) {
+  fft::kiss_fft_free(cfg);
 }
 
-static void Free(kiss_fftr_cfg cfg) {
-  kiss_fftr_free(cfg);
+static void Free(fftr::kiss_fftr_cfg cfg) {
+  fftr::kiss_fftr_free(cfg);
 }
 
-static void FFT(kiss_fft_cfg cfg, const kiss_fft_cpx* in, kiss_fft_cpx* out) {
+static void FFT(fft::kiss_fft_cfg cfg, const kiss_fft_cpx* in, kiss_fft_cpx* out) {
   kiss_fft(cfg, in, out);
 }
 
-static void FFT(kiss_fftr_cfg cfg, const kiss_fft_scalar* in, kiss_fft_cpx* out) {
+static void FFT(fftr::kiss_fftr_cfg cfg, const kiss_fft_scalar* in, kiss_fft_cpx* out) {
   kiss_fftr(cfg, in, out);
 }
 
@@ -107,9 +108,9 @@ NAN_METHOD(_fft) {
     NanReturnUndefined();
   }
   if (input_len == output_len) {
-    NanAsyncQueueWorker(new Worker<kiss_fft_cfg, kiss_fft_cpx, kiss_fft_cpx>(nanCallback, input, output));
+    NanAsyncQueueWorker(new Worker<fft::kiss_fft_cfg, kiss_fft_cpx, kiss_fft_cpx>(nanCallback, input, output));
   } else {
-    NanAsyncQueueWorker(new Worker<kiss_fftr_cfg, kiss_fft_scalar, kiss_fft_cpx>(nanCallback, input, output));
+    NanAsyncQueueWorker(new Worker<fftr::kiss_fftr_cfg, kiss_fft_scalar, kiss_fft_cpx>(nanCallback, input, output));
   }
   NanReturnUndefined();
 }

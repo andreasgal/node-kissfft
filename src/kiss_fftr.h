@@ -37,8 +37,9 @@ void kiss_fftri(kiss_fftr_cfg cfg,const kiss_fft_cpx *freqdata,kiss_fft_scalar *
  input freqdata has  nfft/2+1 complex points
  output timedata has nfft scalar points
 */
-
-#define kiss_fftr_free free
+void kiss_fftr_free(kiss_fftr_cfg cfg) {
+  free(cfg);
+}
 
 #ifdef __cplusplus
 }
