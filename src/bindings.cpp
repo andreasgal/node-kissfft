@@ -1,7 +1,13 @@
 #include <nan.h>
 
+namespace fft {
 #include "kiss_fft.c"
+};
+using namespace fft;
+namespace fftr {
 #include "kiss_fftr.c"
+}
+using namespace fftr;
 
 using namespace v8;
 
@@ -37,11 +43,11 @@ static void Free(kiss_fftr_cfg cfg) {
   kiss_fftr_free(cfg);
 }
 
-static void fft(kiss_fft_cfg cfg, const kiss_fft_cpx* in, kiss_fft_cpx* out) {
+static void FFT(kiss_fft_cfg cfg, const kiss_fft_cpx* in, kiss_fft_cpx* out) {
   kiss_fft(cfg, in, out);
 }
 
-static void fft(kiss_fftr_cfg cfg, const kiss_fft_scalar* in, kiss_fft_cpx* out) {
+static void FFT(kiss_fftr_cfg cfg, const kiss_fft_scalar* in, kiss_fft_cpx* out) {
   kiss_fftr(cfg, in, out);
 }
 
@@ -74,10 +80,10 @@ void Worker<cfg_type, in_type, out_type>::HandleOKCallback() {
 
 template <typename cfg_type, typename in_type, typename out_type>
 void Worker<cfg_type, in_type, out_type>::Execute() {
-  fft(cfg, in, out);
+  FFT(cfg, in, out);
 }
 
-NAN_METHOD(fft) {
+NAN_METHOD(_fft) {
   NanScope();
 
   Local<Object> input = args[0].As<Object>();
@@ -109,7 +115,7 @@ NAN_METHOD(fft) {
 }
 
 void Init(Handle<Object> exports) {
-  exports->Set(NanNew("fft"), NanNew<FunctionTemplate>(fft)->GetFunction());
+  exports->Set(NanNew("fft"), NanNew<FunctionTemplate>(_fft)->GetFunction());
 }
 
 NODE_MODULE(kissfft, Init)
