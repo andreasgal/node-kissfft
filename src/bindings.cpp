@@ -102,9 +102,12 @@ NAN_METHOD(_fft) {
   }
   int input_len = input->GetIndexedPropertiesExternalArrayDataLength();
   int output_len = output->GetIndexedPropertiesExternalArrayDataLength();
-  if (input_len != output_len &&
-      input_len + 2 != output_len) {
+  if (input_len != output_len && input_len + 2 != output_len) {
     NanThrowTypeError("Mismatch of array length for input and output");
+    NanReturnUndefined();
+  }
+  if (output_len & 1) {
+    NanThrowTypeError("Output array must have an even number of elements");
     NanReturnUndefined();
   }
   if (input_len == output_len) {

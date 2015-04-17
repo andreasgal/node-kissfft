@@ -1,7 +1,7 @@
 {
   "name": "kissfft",
   "version": "0.0.1",
-  "description": "kissfft bindings for node.",
+  "description": "FFT for node using kissfft.",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/nodeunit/bin/nodeunit test.js",
