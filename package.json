@@ -1,6 +1,6 @@
 {
   "name": "kissfft",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "FFT for node using kissfft.",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,10 @@
   "author": {
     "name": "Andreas Gal",
     "email": "andreas.gal@gmail.com"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/andreasgal/node-kissfft.git"
   },
   "license": "BSD",
   "dependencies": {
