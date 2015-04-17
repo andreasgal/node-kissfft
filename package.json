@@ -4,7 +4,7 @@
   "description": "kissfft bindings for node.",
   "main": "index.js",
   "scripts": {
-    "test": "node test",
+    "test": "./node_modules/nodeunit/bin/nodeunit test.js",
     "install": "node-gyp rebuild"
   },
   "keywords": [
@@ -19,6 +19,10 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^1.2.0"
+  },
+  "devDependencies": {
+    "fft": "^0.2.1",
+    "nodeunit": "^0.9.1"
   },
   "gypfile": true
 }

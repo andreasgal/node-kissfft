@@ -1,9 +1,32 @@
+/* -*- Mode: Java; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
+
 var fft = require('./index').fft;
+var ref = require('fft').complex;
 
-fft(Float32Array([1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0]), Float32Array(16), function (err, result) {
-  console.log(Array.prototype.join.call(result, ','));
-});
+function join(array, separator) {
+  return Array.prototype.join.call(array, separator);
+}
 
-fft(Float32Array([1, 2, 3, 4, 5, 6, 7, 8]), Float32Array(9), function (err, result) {
-  console.log(Array.prototype.join.call(result, ','));
-});
+function test(name, input) {
+  exports[name] = function(test) {
+    var complex = [];
+    input.forEach(function (r) {
+      complex.push(r, 0);
+    });
+    var output = [];
+    (new ref(input.length, false)).simple(output, complex, 'complex');
+    test.expect(4);
+    fft(Float32Array(complex), Float32Array(output.length), function (err, result) {
+      test.ok(!err);
+      test.equal(join(result, ','), output.join(','));
+      fft(Float32Array(input), Float32Array(input.length+2), function (err, result_r) {
+        test.ok(!err);
+        test.equal(join(result, ',').indexOf(join(result_r, ',')), 0);
+        test.done();
+      });
+    });
+  };
+}
+
+test('fft1', [1,2,3,4]);
