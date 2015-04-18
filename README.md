@@ -7,7 +7,8 @@ Usage:
 ```javascript
 var fft = require('kissfft').fft;
 
-var input = Float32Array([0, 1, 0, 2, 0, 3, 0, 4]);
+// Input is 1+0i 2+0i 3+0i 4+0i
+var input = Float32Array([1, 0, 2, 0, 3, 0, 4, 0]);
 var output = Float32Array(input.length);
 
 // input and output must be exactly the same length, must both have an even
