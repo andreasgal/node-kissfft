@@ -1,3 +1,7 @@
+#ifdef ANDROID
+#include <pthread.h>
+#include "pthread_fixes.h"
+#endif
 #include <nan.h>
 
 namespace fft {
