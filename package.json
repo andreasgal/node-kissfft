@@ -1,6 +1,6 @@
 {
   "name": "kissfft",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "FFT for node using kissfft.",
   "main": "index.js",
   "scripts": {

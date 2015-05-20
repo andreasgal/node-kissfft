@@ -79,7 +79,7 @@ void Worker<cfg_type, in_type, out_type>::HandleOKCallback() {
   NanScope();
 
   Local<Object> output = GetFromPersistent("output");
-  Handle<Value> argv[2] = { ::Null(), output };
+  Handle<Value> argv[2] = { NanNull(), output };
   callback->Call(2, argv);
 }
 
