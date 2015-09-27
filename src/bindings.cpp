@@ -17,12 +17,12 @@ using namespace v8;
 typedef fft::kiss_fft_cpx kiss_fft_cpx;
 
 template <typename cfg_type, typename in_type, typename out_type>
-class Worker : public NanAsyncWorker {
+class Worker : public Nan::AsyncWorker {
 public:
   void HandleOKCallback();
   void Execute();
 
-  Worker(NanCallback* callback, Local<Object> input, Local<Object> output);
+  Worker(Nan::Callback* callback, Local<Value> input, Local<Value> output);
   ~Worker();
 
 private:
@@ -32,11 +32,11 @@ private:
 };
 
 
-static void Alloc(fft::kiss_fft_cfg& cfg, int nfft) {
+static void Alloc(fft::kiss_fft_cfg& cfg, size_t nfft) {
   cfg = fft::kiss_fft_alloc(nfft, false, 0, 0);
 }
 
-static void Alloc(fftr::kiss_fftr_cfg& cfg, int nfft) {
+static void Alloc(fftr::kiss_fftr_cfg& cfg, size_t nfft) {
   cfg = fftr::kiss_fftr_alloc(nfft, false, 0, 0);
 }
 
@@ -57,16 +57,18 @@ static void FFT(fftr::kiss_fftr_cfg cfg, const kiss_fft_scalar* in, kiss_fft_cpx
 }
 
 template <typename cfg_type, typename in_type, typename out_type>
-Worker<cfg_type, in_type, out_type>::Worker(NanCallback *callback, Local<Object> input, Local<Object> output)
-  : NanAsyncWorker(callback) {
-  int nfft = input->GetIndexedPropertiesExternalArrayDataLength();
-  if (nfft == output->GetIndexedPropertiesExternalArrayDataLength())
+Worker<cfg_type, in_type, out_type>::Worker(Nan::Callback *callback, Local<Value> input, Local<Value> output)
+  : Nan::AsyncWorker(callback) {
+  Local<Float32Array> inArr = input.As<Float32Array>();
+  Local<Float32Array> outArr = output.As<Float32Array>();
+  size_t nfft = inArr->Length();
+  if (nfft == outArr->Length())
     nfft /= 2;
   Alloc(cfg, nfft);
   SaveToPersistent("input", input);
   SaveToPersistent("output", output);
-  in = (const in_type*) input->GetIndexedPropertiesExternalArrayData();
-  out = (out_type*) output->GetIndexedPropertiesExternalArrayData();
+  in = (const in_type*) inArr->Length();
+  out = (out_type*) outArr->Length();
 }
 
 template <typename cfg_type, typename in_type, typename out_type>
@@ -76,10 +78,10 @@ Worker<cfg_type, in_type, out_type>::~Worker() {
 
 template <typename cfg_type, typename in_type, typename out_type>
 void Worker<cfg_type, in_type, out_type>::HandleOKCallback() {
-  NanScope();
+  Nan::HandleScope scope;
 
-  Local<Object> output = GetFromPersistent("output");
-  Handle<Value> argv[2] = { NanNull(), output };
+  Local<Value> output = GetFromPersistent("output");
+  Handle<Value> argv[2] = { Nan::Null(), output };
   callback->Call(2, argv);
 }
 
@@ -89,41 +91,39 @@ void Worker<cfg_type, in_type, out_type>::Execute() {
 }
 
 NAN_METHOD(_fft) {
-  NanScope();
+  Nan::HandleScope scope;
 
-  Local<Object> input = args[0].As<Object>();
-  Local<Object> output = args[1].As<Object>();
-  Local<Function> callback = args[2].As<Function>();
-
-  NanCallback* nanCallback = new NanCallback(callback);
-
-  if (!input->HasIndexedPropertiesInExternalArrayData() ||
-      input->GetIndexedPropertiesExternalArrayDataType() != kExternalFloatArray ||
-      !output->HasIndexedPropertiesInExternalArrayData() ||
-      output->GetIndexedPropertiesExternalArrayDataType() != kExternalFloatArray) {
-    NanThrowTypeError("Float32Array expected");
-    NanReturnUndefined();
+  // Note: IsFloat32Array is an experimental feature...
+  if (!info[0]->IsFloat32Array() || !info[0]->IsFloat32Array()) {
+    Nan::ThrowTypeError("Float32Array expected");
+    return;
   }
-  int input_len = input->GetIndexedPropertiesExternalArrayDataLength();
-  int output_len = output->GetIndexedPropertiesExternalArrayDataLength();
+
+  Local<Float32Array> input = info[0].As<Float32Array>();
+  Local<Float32Array> output = info[1].As<Float32Array>();
+  Local<Function> callback = info[2].As<Function>();
+
+  Nan::Callback* nanCallback = new Nan::Callback(callback);
+
+  int input_len = input->Length();
+  int output_len = output->Length();
   if (input_len != output_len && input_len + 2 != output_len) {
-    NanThrowTypeError("Mismatch of array length for input and output");
-    NanReturnUndefined();
+    Nan::ThrowTypeError("Mismatch of array length for input and output");
+    return;
   }
   if (output_len & 1) {
-    NanThrowTypeError("Output array must have an even number of elements");
-    NanReturnUndefined();
+    Nan::ThrowTypeError("Output array must have an even number of elements");
+    return;
   }
   if (input_len == output_len) {
-    NanAsyncQueueWorker(new Worker<fft::kiss_fft_cfg, kiss_fft_cpx, kiss_fft_cpx>(nanCallback, input, output));
+    Nan::AsyncQueueWorker(new Worker<fft::kiss_fft_cfg, kiss_fft_cpx, kiss_fft_cpx>(nanCallback, input, output));
   } else {
-    NanAsyncQueueWorker(new Worker<fftr::kiss_fftr_cfg, kiss_fft_scalar, kiss_fft_cpx>(nanCallback, input, output));
+    Nan::AsyncQueueWorker(new Worker<fftr::kiss_fftr_cfg, kiss_fft_scalar, kiss_fft_cpx>(nanCallback, input, output));
   }
-  NanReturnUndefined();
 }
 
-void Init(Handle<Object> exports) {
-  exports->Set(NanNew("fft"), NanNew<FunctionTemplate>(_fft)->GetFunction());
+static void Init(Handle<Object> exports) {
+  exports->Set(Nan::New("fft").ToLocalChecked(), Nan::New<FunctionTemplate>(_fft)->GetFunction());
 }
 
 NODE_MODULE(kissfft, Init)
