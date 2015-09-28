@@ -67,8 +67,8 @@ Worker<cfg_type, in_type, out_type>::Worker(Nan::Callback *callback, Local<Value
   Alloc(cfg, nfft);
   SaveToPersistent("input", input);
   SaveToPersistent("output", output);
-  in = (const in_type*) inArr->Length();
-  out = (out_type*) outArr->Length();
+  in = (const in_type*) inArr->Buffer()->GetContents().Data();
+  out = (out_type*) outArr->Buffer()->GetContents().Data();
 }
 
 template <typename cfg_type, typename in_type, typename out_type>
